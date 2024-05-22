@@ -16,6 +16,7 @@ public class UniqueIPAddressCounter {
 
     //Need to improve hashing algorithm to reduce number of collisions.
     //Currently, collisions occurs in ~0.02% cases
+    //On small files naive will be better for both CPU and memory
     public static void main(String[] args) {
         String filePath = "path/to/your/large/ipfile.txt";
         tests();
@@ -58,6 +59,11 @@ public class UniqueIPAddressCounter {
     }
 
     private static void countUniqueIPAddressesTest() {
+        long startTime = System.currentTimeMillis();
+        var runtime = Runtime.getRuntime();
+        runtime.gc();
+        var memoryBefore = (runtime.totalMemory() - runtime.freeMemory()) / 1000000;
+        System.out.println("Memory before: " + memoryBefore + " MBs");
         BitSet bitSet = new BitSet(BITSET_SIZE);
         String str;
         for (int i = 0; i < TEST_COUNT; i++) {
@@ -68,8 +74,34 @@ public class UniqueIPAddressCounter {
                     rand.nextInt(256) + "");
             bitSet.set(Math.absExact(str.hashCode()));
         }
-
+        long finishTime = System.currentTimeMillis();
+        System.out.println("That took: " + (finishTime - startTime) + " ms");
+        var memoryAfter = (runtime.totalMemory() - runtime.freeMemory()) / 1000000;
+        System.out.println("Memory increase: " + (memoryAfter - memoryBefore) + " MBs");
         System.out.printf("Test 2. Assume at least 1, got: %s%n", bitSet.cardinality());
+    }
+
+    private static void countUniqueIPAddressesNaiveTest() {
+        long startTime = System.currentTimeMillis();
+        var runtime = Runtime.getRuntime();
+        runtime.gc();
+        var memoryBefore = (runtime.totalMemory() - runtime.freeMemory()) / 1000000;
+        System.out.println("Memory before: " + memoryBefore + " MBs");
+        HashSet<String> set = new HashSet<>();
+        String str;
+        for (int i = 0; i < TEST_COUNT; i++) {
+            str = String.join(".",
+                    rand.nextInt(256) + "",
+                    rand.nextInt(256) + "",
+                    rand.nextInt(256) + "",
+                    rand.nextInt(256) + "");
+            set.add(str);
+        }
+        long finishTime = System.currentTimeMillis();
+        System.out.println("That took: " + (finishTime - startTime) + " ms");
+        var memoryAfter = (runtime.totalMemory() - runtime.freeMemory()) / 1000000;
+        System.out.println("Memory increase: " + (memoryAfter - memoryBefore) + " MBs");
+        System.out.printf("Test 2 Naive. Assume at least 1, got: %s%n", set.size());
     }
 
     private static void countUniqueIPAddressesCloseResultToNaiveTest() {
