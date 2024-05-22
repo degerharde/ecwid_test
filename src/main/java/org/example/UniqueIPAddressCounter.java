@@ -37,7 +37,7 @@ public class UniqueIPAddressCounter {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                bitSet.set(Math.absExact(line.hashCode() % BITSET_SIZE));
+                bitSet.set(Math.absExact(line.hashCode()));
             }
         }
 
